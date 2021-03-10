@@ -38,7 +38,7 @@ namespace Ayka_scoi
             this.BAdd.Name = "BAdd";
             this.BAdd.Size = new System.Drawing.Size(104, 29);
             this.BAdd.TabIndex = 0;
-            this.BAdd.Text = "Add";
+            this.BAdd.Text = "Добавить";
             this.BAdd.UseVisualStyleBackColor = true;
             this.BAdd.Click += new System.EventHandler(this.BAdd_Click);
             // 
