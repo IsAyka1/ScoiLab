@@ -19,14 +19,16 @@ namespace Ayka_scoi
 
     class Layer
     {
+        public uint id = 0;
         public ECHANEL EChanel = 0;
         public EOPER EOper = 0;
         public uint Visible = 100;
         public Bitmap Img = null;
 
-        public Layer(Bitmap img)
+        public Layer(Bitmap img, uint _id)
         {
             Img = img;
+            id = _id;
         }
     }
 

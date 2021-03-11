@@ -34,9 +34,9 @@ namespace Ayka_scoi
             // 
             // BAdd
             // 
-            this.BAdd.Location = new System.Drawing.Point(12, 409);
+            this.BAdd.Location = new System.Drawing.Point(12, 414);
             this.BAdd.Name = "BAdd";
-            this.BAdd.Size = new System.Drawing.Size(104, 29);
+            this.BAdd.Size = new System.Drawing.Size(104, 30);
             this.BAdd.TabIndex = 0;
             this.BAdd.Text = "Добавить";
             this.BAdd.UseVisualStyleBackColor = true;
