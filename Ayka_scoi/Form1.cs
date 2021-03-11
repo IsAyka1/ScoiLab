@@ -1,13 +1,9 @@
 ﻿using Ayka_scoi;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Ayka_scoi
@@ -66,7 +62,7 @@ namespace Ayka_scoi
             this.Controls.Add(BResult);
             BResult.Click += new EventHandler(Get_Result);
 
-            ResultPic.Image = new Bitmap("Background.png");
+            ResultPic.Image = Image.FromFile(@"C:\Users\mtara\Desktop\ScoiLab\Background.png");
             ResultPic.SizeMode = PictureBoxSizeMode.Zoom;
             ResultPic.Size = new Size(500,400);
             ResultPic.Location = new Point(10,10);
@@ -184,8 +180,14 @@ namespace Ayka_scoi
             var list = (Button)sender;
             var id = list.Parent.Name.Split(new char[] { ' ' });
 
+            for (int i = Int32.Parse(id[1]); i < LayerCount; i++)
+            {
+                LayersList[i].id--;
+                list.Parent.Name = "Layer " + Convert.ToString(LayersList[i].id + 1);
+            }
             LayersList.RemoveAt(Int32.Parse(id[1]) - 1);
-            list.Parent.Parent.Controls.Remove(list.Parent);
+            //this.Controls.Remove(list.Parent);
+            list.Parent.Dispose();
             LayerCount--;
         }
 
@@ -208,8 +210,9 @@ namespace Ayka_scoi
 
         private void Get_Result(object sender, System.EventArgs e)
         {
+            ResultPic.Image = Image.FromFile(@"C:\Users\mtara\Desktop\ScoiLab\Background0.png");
             //foreach(var elem in LayersList)
-            for(int i = LayersList.Count - 1; i >= 0; i--)
+            for (int i = LayersList.Count - 1; i >= 0; i--)
             {
                 switch (LayersList[i].EOper)
                 {
@@ -238,11 +241,11 @@ namespace Ayka_scoi
                         break;
                 }
             }
-
         }
 
         Bitmap GetVisible(Layer elem)
         {
+
             if (elem.Visible == 100)
             {
                 return elem.Img;
@@ -280,9 +283,8 @@ namespace Ayka_scoi
             System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, bytes);
 
             var bmp = (Bitmap)ResultPic.Image;
-            var bmpData1 = bmp.LockBits(new Rectangle(0, 0, pic.Width, pic.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, pic.PixelFormat);
-            bmp.Dispose();
-            IntPtr ptr1 = bmpData.Scan0;
+            BitmapData bmpData1 = bmp.LockBits(new Rectangle(0, 0, pic.Width, pic.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, pic.PixelFormat);
+            IntPtr ptr1 = bmpData1.Scan0;
             int bytes1 = Math.Abs(bmpData.Stride) * pic.Height;
             byte[] rgbValues1 = new byte[bytes];
             System.Runtime.InteropServices.Marshal.Copy(ptr1, rgbValues1, 0, bytes1);
@@ -292,9 +294,12 @@ namespace Ayka_scoi
                 switch (chanel)
                 {
                     case ECHANEL.RGB:
-                        rgbValues1[i] = Normalize(rgbValues[i] + rgbValues[i]);
-                        rgbValues1[i+1] += rgbValues[i+1];
-                        rgbValues1[i+2] += rgbValues[i+2];
+                        int result = rgbValues[i] + rgbValues[i];
+                        rgbValues1[i] = Convert.ToByte(Normalize(result));
+                        result = rgbValues[i+1] + rgbValues[i+1];
+                        rgbValues1[i+1] = Convert.ToByte(Normalize(result));
+                        result = rgbValues[i+2] + rgbValues[i+2];
+                        rgbValues1[i+2] = Convert.ToByte(Normalize(result));
                         break;
                     case ECHANEL.RG:
 
@@ -311,9 +316,12 @@ namespace Ayka_scoi
                         break;
                 }
             }
+            System.Runtime.InteropServices.Marshal.Copy(rgbValues1, 0, ptr1, bytes);
+            pic.UnlockBits(bmpData);
+            bmp.UnlockBits(bmpData1);
         }
 
-        int Normalize(byte result)
+        int Normalize(int result)
         {
             if (result > 255)
             {
