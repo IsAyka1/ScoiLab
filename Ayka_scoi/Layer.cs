@@ -4,12 +4,13 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Ayka_scoi
 {
     enum EOPER
     {
-        No, Sum, Difference, Multy, Division, Min, Max
+        No, Sum, Difference, Multy, Min, Max
     }
 
     enum ECHANEL
@@ -19,16 +20,17 @@ namespace Ayka_scoi
 
     class Layer
     {
-        public uint id = 0;
+        //public uint id = 0;
         public ECHANEL EChanel = 0;
         public EOPER EOper = 0;
         public uint Visible = 100;
         public Bitmap Img = null;
+        public FlowLayoutPanel plane = null;
 
-        public Layer(Bitmap img, uint _id)
+        public Layer(ref Bitmap img, FlowLayoutPanel ptr)
         {
             Img = img;
-            id = _id;
+            plane = ptr;
         }
     }
 
