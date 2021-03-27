@@ -20,7 +20,6 @@ namespace Ayka_scoi
 
     class Layer
     {
-        //public uint id = 0;
         public ECHANEL EChanel = 0;
         public EOPER EOper = 0;
         public uint Visible = 100;

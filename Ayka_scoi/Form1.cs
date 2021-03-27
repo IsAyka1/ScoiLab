@@ -57,6 +57,7 @@ namespace Ayka_scoi
                 LayersList.Add(new Layer(ref Img, NewLayer));
                 PicPanel.Controls.Add(NewLayer);
             }
+
         }
 
         PictureBox ResultPic = new PictureBox();
@@ -201,35 +202,53 @@ namespace Ayka_scoi
             ResultPic.Image = Image.FromFile("Background0.png");
             for (int i = LayersList.Count - 1; i >= 0; i--)
             {
+                Bitmap Visible = GetVisible(LayersList[i]);
+
+                var bmpData = Visible.LockBits(new Rectangle(0, 0, Visible.Width, Visible.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, Visible.PixelFormat);
+                IntPtr ptr = bmpData.Scan0;
+                int bytes = Math.Abs(bmpData.Stride) * Visible.Height;
+                byte[] bgraValues = new byte[bytes];
+                System.Runtime.InteropServices.Marshal.Copy(ptr, bgraValues, 0, bytes);
+
+                var bmp = (Bitmap)ResultPic.Image;
+                BitmapData bmpData1 = bmp.LockBits(new Rectangle(0, 0, Visible.Width, Visible.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, Visible.PixelFormat);
+                IntPtr ptr1 = bmpData1.Scan0;
+                byte[] bgraValues1 = new byte[bytes];
+                System.Runtime.InteropServices.Marshal.Copy(ptr1, bgraValues1, 0, bytes);
                 switch (LayersList[i].EOper)
                 {
                     case EOPER.No:
-                        No(LayersList[i].EChanel, GetVisible(LayersList[i]));
+                        No(LayersList[i].EChanel, bgraValues, ref bgraValues1);
                         break;
                     case EOPER.Sum:
-                        Sum(LayersList[i].EChanel, GetVisible(LayersList[i]));
+                        Sum(LayersList[i].EChanel, bgraValues, ref bgraValues1);
                         break;
                     case EOPER.Difference:
-                        ResultPic.Image = Image.FromFile("Background.png");
-                        Difference(LayersList[i].EChanel, GetVisible(LayersList[i]));
+                        Difference(LayersList[i].EChanel, bgraValues, ref bgraValues1);
                         break;
                     case EOPER.Multy:
-                        Multy(LayersList[i].EChanel, GetVisible(LayersList[i]));
+                        Multy(LayersList[i].EChanel, (int)LayersList[i].Visible, bgraValues, ref bgraValues1);
                         break;
-                   // case EOPER.Division:
-                   //     ResultPic.Image = Image.FromFile("Background.png");
-                   //     Division(LayersList[i].EChanel, GetVisible(LayersList[i]));
-                   //     break;
                     case EOPER.Min:
-                        Min(LayersList[i].EChanel, GetVisible(LayersList[i]));
+                        Min(LayersList[i].EChanel, bgraValues, ref bgraValues1);
                         break;
                     case EOPER.Max:
-                        Max(LayersList[i].EChanel, GetVisible(LayersList[i]));
+                        Max(LayersList[i].EChanel, bgraValues, ref bgraValues1);
                         break;
                     default:
                         break;
                 }
+                System.Runtime.InteropServices.Marshal.Copy(bgraValues1, 0, ptr1, bytes);
+                Visible.UnlockBits(bmpData);
+                bmp.UnlockBits(bmpData1);
+                Visible.Dispose();
             }
+            Button BGistogram = new Button();
+            BGistogram.Size = new Size(110, 30);
+            BGistogram.Location = new Point(255, 414);
+            BGistogram.Text = "Гистограмма";
+            this.Controls.Add(BGistogram);
+            BGistogram.Click += new EventHandler(Get_Gistogram);
         }
 
         Bitmap GetVisible(Layer elem)
@@ -256,121 +275,6 @@ namespace Ayka_scoi
             return picture;
         }
 
-        void No(ECHANEL chanel, Bitmap pic)
-        {
-            var bmpData = pic.LockBits(new Rectangle(0, 0, pic.Width, pic.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, pic.PixelFormat);
-            IntPtr ptr = bmpData.Scan0;
-            int bytes = Math.Abs(bmpData.Stride) * pic.Height;
-            byte[] rgbValues = new byte[bytes];
-            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, bytes);
-
-            var bmp = (Bitmap)ResultPic.Image;
-            BitmapData bmpData1 = bmp.LockBits(new Rectangle(0, 0, pic.Width, pic.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, pic.PixelFormat);
-            IntPtr ptr1 = bmpData1.Scan0;
-            byte[] rgbValues1 = new byte[bytes];
-            System.Runtime.InteropServices.Marshal.Copy(ptr1, rgbValues1, 0, bytes);
-
-            for (var i = 0; i < rgbValues1.Length; i += 4)
-            {
-                int result = 0;
-                switch (chanel)
-                {
-                    case ECHANEL.RGB:
-                        rgbValues1[i] = rgbValues[i];
-                        rgbValues1[i + 1] = rgbValues[i + 1];
-                        rgbValues1[i + 2] = rgbValues[i + 2];
-                        break;
-                    case ECHANEL.RG:
-                        rgbValues1[i + 1] = rgbValues[i + 1];
-                        rgbValues1[i + 2] = rgbValues[i + 2];
-                        break;
-                    case ECHANEL.RB:
-                        rgbValues1[i] = rgbValues[i];
-                        rgbValues1[i + 2] = rgbValues[i + 2];
-                        break;
-                    case ECHANEL.GB:
-                        rgbValues1[i] = rgbValues[i];
-                        rgbValues1[i + 1] = rgbValues[i + 1];
-                        break;
-                    case ECHANEL.R:
-                        rgbValues1[i + 2] = rgbValues[i + 2];
-                        break;
-                    case ECHANEL.G:
-                        rgbValues1[i + 1] = rgbValues[i + 1];
-                        break;
-                    case ECHANEL.B:
-                        rgbValues1[i] = rgbValues[i];
-                        break;
-                }
-            }
-            System.Runtime.InteropServices.Marshal.Copy(rgbValues1, 0, ptr1, bytes);
-            pic.UnlockBits(bmpData);
-            bmp.UnlockBits(bmpData1);
-        }
-        void Sum(ECHANEL chanel, Bitmap pic)
-        {
-            var bmpData = pic.LockBits(new Rectangle(0, 0, pic.Width, pic.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, pic.PixelFormat);
-            IntPtr ptr = bmpData.Scan0;
-            int bytes = Math.Abs(bmpData.Stride) * pic.Height;
-            byte[] rgbValues = new byte[bytes];
-            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, bytes);
-
-            var bmp = (Bitmap)ResultPic.Image;
-            BitmapData bmpData1 = bmp.LockBits(new Rectangle(0, 0, pic.Width, pic.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, pic.PixelFormat);
-            IntPtr ptr1 = bmpData1.Scan0;
-            byte[] rgbValues1 = new byte[bytes];
-            System.Runtime.InteropServices.Marshal.Copy(ptr1, rgbValues1, 0, bytes);
-
-            for (var i = 0; i < rgbValues1.Length; i += 4)
-            {
-                int result = 0;
-                switch (chanel)
-                {
-                    case ECHANEL.RGB:
-                        result = rgbValues[i] + rgbValues1[i];
-                        rgbValues1[i] = Convert.ToByte(Normalize(result));
-                        result = rgbValues[i+1] + rgbValues1[i+1];
-                        rgbValues1[i+1] = Convert.ToByte(Normalize(result));
-                        result = rgbValues[i+2] + rgbValues1[i+2];
-                        rgbValues1[i+2] = Convert.ToByte(Normalize(result));
-                        break;
-                    case ECHANEL.RG:
-                        result = rgbValues[i + 1] + rgbValues1[i + 1];
-                        rgbValues1[i + 1] = Convert.ToByte(Normalize(result));
-                        result = rgbValues[i + 2] + rgbValues1[i + 2];
-                        rgbValues1[i + 2] = Convert.ToByte(Normalize(result));
-                        break;
-                    case ECHANEL.RB:
-                        result = rgbValues[i] + rgbValues1[i];
-                        rgbValues1[i] = Convert.ToByte(Normalize(result));
-                        result = rgbValues[i + 2] + rgbValues1[i + 2];
-                        rgbValues1[i + 2] = Convert.ToByte(Normalize(result));
-                        break;
-                    case ECHANEL.GB:
-                        result = rgbValues[i] + rgbValues1[i];
-                        rgbValues1[i] = Convert.ToByte(Normalize(result));
-                        result = rgbValues[i + 1] + rgbValues1[i + 1];
-                        rgbValues1[i + 1] = Convert.ToByte(Normalize(result));
-                        break;
-                    case ECHANEL.R:
-                        result = rgbValues[i + 2] + rgbValues1[i + 2];
-                        rgbValues1[i + 2] = Convert.ToByte(Normalize(result));
-                        break;
-                    case ECHANEL.G:
-                        result = rgbValues[i + 1] - rgbValues1[i + 1];
-                        rgbValues1[i + 1] = Convert.ToByte(Normalize(result));
-                        break;
-                    case ECHANEL.B:
-                        result = rgbValues[i] + rgbValues1[i];
-                        rgbValues1[i] = Convert.ToByte(Normalize(result));
-                        break;
-                }
-            }
-            System.Runtime.InteropServices.Marshal.Copy(rgbValues1, 0, ptr1, bytes);
-            pic.UnlockBits(bmpData);
-            bmp.UnlockBits(bmpData1);
-        }
-
         int Normalize(int result)
         {
             if (result > 255)
@@ -385,292 +289,316 @@ namespace Ayka_scoi
                 return result;
         }
 
-        void Difference(ECHANEL chanel, Bitmap pic)
+        void No(ECHANEL chanel, byte[] bgraValues, ref byte[] bgraValues1)
         {
-            var bmpData = pic.LockBits(new Rectangle(0, 0, pic.Width, pic.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, pic.PixelFormat);
-            IntPtr ptr = bmpData.Scan0;
-            int bytes = Math.Abs(bmpData.Stride) * pic.Height;
-            byte[] rgbValues = new byte[bytes];
-            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, bytes);
 
-            var bmp = (Bitmap)ResultPic.Image;
-            BitmapData bmpData1 = bmp.LockBits(new Rectangle(0, 0, pic.Width, pic.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, pic.PixelFormat);
-            IntPtr ptr1 = bmpData1.Scan0;
-            byte[] rgbValues1 = new byte[bytes];
-            System.Runtime.InteropServices.Marshal.Copy(ptr1, rgbValues1, 0, bytes);
+            for (var i = 0; i < bgraValues1.Length; i += 4)
+            {
+                switch (chanel)
+                {
+                    case ECHANEL.RGB:
+                        bgraValues1[i] = bgraValues[i];
+                        bgraValues1[i + 1] = bgraValues[i + 1];
+                        bgraValues1[i + 2] = bgraValues[i + 2];
+                        break;
+                    case ECHANEL.RG:
+                        bgraValues1[i + 1] = bgraValues[i + 1];
+                        bgraValues1[i + 2] = bgraValues[i + 2];
+                        break;
+                    case ECHANEL.RB:
+                        bgraValues1[i] = bgraValues[i];
+                        bgraValues1[i + 2] = bgraValues[i + 2];
+                        break;
+                    case ECHANEL.GB:
+                        bgraValues1[i] = bgraValues[i];
+                        bgraValues1[i + 1] = bgraValues[i + 1];
+                        break;
+                    case ECHANEL.R:
+                        bgraValues1[i + 2] = bgraValues[i + 2];
+                        break;
+                    case ECHANEL.G:
+                        bgraValues1[i + 1] = bgraValues[i + 1];
+                        break;
+                    case ECHANEL.B:
+                        bgraValues1[i] = bgraValues[i];
+                        break;
+                }
+            }
+        }
+        void Sum(ECHANEL chanel, byte[] bgraValues, ref byte[] bgraValues1)
+        {
 
-            for (var i = 0; i < rgbValues1.Length; i += 4)
+            for (var i = 0; i < bgraValues1.Length; i += 4)
             {
                 int result = 0;
                 switch (chanel)
                 {
                     case ECHANEL.RGB:
-                        result = rgbValues1[i] - rgbValues[i];
-                        rgbValues1[i] = Convert.ToByte(Normalize(result));
-                        result = rgbValues1[i + 1] - rgbValues[i + 1];
-                        rgbValues1[i + 1] = Convert.ToByte(Normalize(result));
-                        result = rgbValues1[i + 2] - rgbValues[i + 2];
-                        rgbValues1[i + 2] = Convert.ToByte(Normalize(result));
+                        result = bgraValues[i] + bgraValues1[i];
+                        bgraValues1[i] = Convert.ToByte(Normalize(result));
+                        result = bgraValues[i+1] + bgraValues1[i+1];
+                        bgraValues1[i+1] = Convert.ToByte(Normalize(result));
+                        result = bgraValues[i+2] + bgraValues1[i+2];
+                        bgraValues1[i+2] = Convert.ToByte(Normalize(result));
                         break;
                     case ECHANEL.RG:
-                        result = rgbValues1[i + 1] - rgbValues[i + 1];
-                        rgbValues1[i + 1] = Convert.ToByte(Normalize(result));
-                        result = rgbValues1[i + 2] - rgbValues[i + 2];
-                        rgbValues1[i + 2] = Convert.ToByte(Normalize(result));
+                        result = bgraValues[i + 1] + bgraValues1[i + 1];
+                        bgraValues1[i + 1] = Convert.ToByte(Normalize(result));
+                        result = bgraValues[i + 2] + bgraValues1[i + 2];
+                        bgraValues1[i + 2] = Convert.ToByte(Normalize(result));
                         break;
                     case ECHANEL.RB:
-                        result = rgbValues1[i] - rgbValues[i];
-                        rgbValues1[i] = Convert.ToByte(Normalize(result));
-                        result = rgbValues1[i + 2] - rgbValues[i + 2];
-                        rgbValues1[i + 2] = Convert.ToByte(Normalize(result));
+                        result = bgraValues[i] + bgraValues1[i];
+                        bgraValues1[i] = Convert.ToByte(Normalize(result));
+                        result = bgraValues[i + 2] + bgraValues1[i + 2];
+                        bgraValues1[i + 2] = Convert.ToByte(Normalize(result));
                         break;
                     case ECHANEL.GB:
-                        result = rgbValues1[i] - rgbValues[i];
-                        rgbValues1[i] = Convert.ToByte(Normalize(result));
-                        result = rgbValues1[i + 1] - rgbValues[i + 1];
-                        rgbValues1[i + 1] = Convert.ToByte(Normalize(result));
+                        result = bgraValues[i] + bgraValues1[i];
+                        bgraValues1[i] = Convert.ToByte(Normalize(result));
+                        result = bgraValues[i + 1] + bgraValues1[i + 1];
+                        bgraValues1[i + 1] = Convert.ToByte(Normalize(result));
                         break;
                     case ECHANEL.R:
-                        result = rgbValues1[i + 2] - rgbValues[i + 2];
-                        rgbValues1[i + 2] = Convert.ToByte(Normalize(result));
+                        result = bgraValues[i + 2] + bgraValues1[i + 2];
+                        bgraValues1[i + 2] = Convert.ToByte(Normalize(result));
                         break;
                     case ECHANEL.G:
-                        result = rgbValues1[i + 1] - rgbValues[i + 1];
-                        rgbValues1[i + 1] = Convert.ToByte(Normalize(result));
+                        result = bgraValues[i + 1] - bgraValues1[i + 1];
+                        bgraValues1[i + 1] = Convert.ToByte(Normalize(result));
                         break;
                     case ECHANEL.B:
-                        result = rgbValues1[i] - rgbValues[i];
-                        rgbValues1[i] = Convert.ToByte(Normalize(result));
+                        result = bgraValues[i] + bgraValues1[i];
+                        bgraValues1[i] = Convert.ToByte(Normalize(result));
                         break;
                 }
             }
-            System.Runtime.InteropServices.Marshal.Copy(rgbValues1, 0, ptr1, bytes);
-            pic.UnlockBits(bmpData);
-            bmp.UnlockBits(bmpData1);
         }
-        void Multy(ECHANEL chanel, Bitmap pic)
+
+        void Difference(ECHANEL chanel, byte[] bgraValues, ref byte[] bgraValues1)
         {
-            var bmpData = pic.LockBits(new Rectangle(0, 0, pic.Width, pic.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, pic.PixelFormat);
-            IntPtr ptr = bmpData.Scan0;
-            int bytes = Math.Abs(bmpData.Stride) * pic.Height;
-            byte[] rgbValues = new byte[bytes];
-            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, bytes);
 
-            var bmp = (Bitmap)ResultPic.Image;
-            BitmapData bmpData1 = bmp.LockBits(new Rectangle(0, 0, pic.Width, pic.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, pic.PixelFormat);
-            IntPtr ptr1 = bmpData1.Scan0;
-            byte[] rgbValues1 = new byte[bytes];
-            System.Runtime.InteropServices.Marshal.Copy(ptr1, rgbValues1, 0, bytes);
-
-            for (var i = 0; i < rgbValues1.Length; i += 4)
+            for (var i = 0; i < bgraValues1.Length; i += 4)
             {
                 int result = 0;
                 switch (chanel)
                 {
                     case ECHANEL.RGB:
-                        result = rgbValues[i] * rgbValues1[i];
-                        rgbValues1[i] = Convert.ToByte(Normalize(result));
-                        result = rgbValues[i + 1] * rgbValues1[i + 1];
-                        rgbValues1[i + 1] = Convert.ToByte(Normalize(result));
-                        result = rgbValues[i + 2] * rgbValues1[i + 2];
-                        rgbValues1[i + 2] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i] - bgraValues[i];
+                        bgraValues1[i] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i + 1] - bgraValues[i + 1];
+                        bgraValues1[i + 1] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i + 2] - bgraValues[i + 2];
+                        bgraValues1[i + 2] = Convert.ToByte(Normalize(result));
                         break;
                     case ECHANEL.RG:
-                        result = rgbValues[i + 1] * rgbValues1[i + 1];
-                        rgbValues1[i + 1] = Convert.ToByte(Normalize(result));
-                        result = rgbValues[i + 2] * rgbValues1[i + 2];
-                        rgbValues1[i + 2] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i + 1] - bgraValues[i + 1];
+                        bgraValues1[i + 1] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i + 2] - bgraValues[i + 2];
+                        bgraValues1[i + 2] = Convert.ToByte(Normalize(result));
                         break;
                     case ECHANEL.RB:
-                        result = rgbValues[i] * rgbValues1[i];
-                        rgbValues1[i] = Convert.ToByte(Normalize(result));
-                        result = rgbValues[i + 2] * rgbValues1[i + 2];
-                        rgbValues1[i + 2] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i] - bgraValues[i];
+                        bgraValues1[i] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i + 2] - bgraValues[i + 2];
+                        bgraValues1[i + 2] = Convert.ToByte(Normalize(result));
                         break;
                     case ECHANEL.GB:
-                        result = rgbValues[i] * rgbValues1[i];
-                        rgbValues1[i] = Convert.ToByte(Normalize(result));
-                        result = rgbValues[i + 1] * rgbValues1[i + 1];
-                        rgbValues1[i + 1] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i] - bgraValues[i];
+                        bgraValues1[i] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i + 1] - bgraValues[i + 1];
+                        bgraValues1[i + 1] = Convert.ToByte(Normalize(result));
                         break;
                     case ECHANEL.R:
-                        result = rgbValues[i + 2] * rgbValues1[i + 2];
-                        rgbValues1[i + 2] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i + 2] - bgraValues[i + 2];
+                        bgraValues1[i + 2] = Convert.ToByte(Normalize(result));
                         break;
                     case ECHANEL.G:
-                        result = rgbValues[i + 1] * rgbValues1[i + 1];
-                        rgbValues1[i + 1] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i + 1] - bgraValues[i + 1];
+                        bgraValues1[i + 1] = Convert.ToByte(Normalize(result));
                         break;
                     case ECHANEL.B:
-                        result = rgbValues[i] * rgbValues1[i];
-                        rgbValues1[i] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i] - bgraValues[i];
+                        bgraValues1[i] = Convert.ToByte(Normalize(result));
                         break;
                 }
             }
-            System.Runtime.InteropServices.Marshal.Copy(rgbValues1, 0, ptr1, bytes);
-            pic.UnlockBits(bmpData);
-            bmp.UnlockBits(bmpData1);
         }
-        void Division(ECHANEL chanel, Bitmap pic)
+        void Multy(ECHANEL chanel, int a, byte[] bgraValues, ref byte[] bgraValues1)
         {
-            var bmpData = pic.LockBits(new Rectangle(0, 0, pic.Width, pic.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, pic.PixelFormat);
-            IntPtr ptr = bmpData.Scan0;
-            int bytes = Math.Abs(bmpData.Stride) * pic.Height;
-            byte[] rgbValues = new byte[bytes];
-            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, bytes);
 
-            var bmp = (Bitmap)ResultPic.Image;
-            BitmapData bmpData1 = bmp.LockBits(new Rectangle(0, 0, pic.Width, pic.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, pic.PixelFormat);
-            IntPtr ptr1 = bmpData1.Scan0;
-            byte[] rgbValues1 = new byte[bytes];
-            System.Runtime.InteropServices.Marshal.Copy(ptr1, rgbValues1, 0, bytes);
-
-            for (var i = 0; i < rgbValues1.Length; i += 4)
+            for (var i = 0; i < bgraValues1.Length; i += 4)
             {
                 int result = 0;
                 switch (chanel)
                 {
                     case ECHANEL.RGB:
-                        result = rgbValues[i] / rgbValues1[i];
-                        rgbValues1[i] = Convert.ToByte(Normalize(result));
-                        result = rgbValues[i + 1] / rgbValues1[i + 1];
-                        rgbValues1[i + 1] = Convert.ToByte(Normalize(result));
-                        result = rgbValues[i + 2] / rgbValues1[i + 2];
-                        rgbValues1[i + 2] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i] * (1 - a) + bgraValues[i] * bgraValues1[i];
+                        bgraValues1[i] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i + 1] * (1 - a) + bgraValues[i + 1] * bgraValues1[i + 1];
+                        bgraValues1[i + 1] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i + 2] * (1 - a) + bgraValues[i + 2] * bgraValues1[i + 2];
+                        bgraValues1[i + 2] = Convert.ToByte(Normalize(result));
                         break;
                     case ECHANEL.RG:
-                        result = rgbValues[i + 1] / rgbValues1[i + 1];
-                        rgbValues1[i + 1] = Convert.ToByte(Normalize(result));
-                        result = rgbValues[i + 2] / rgbValues1[i + 2];
-                        rgbValues1[i + 2] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i + 1] * (1 - a) + bgraValues[i + 1] * bgraValues1[i + 1];
+                        bgraValues1[i + 1] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i + 2] * (1 - a) + bgraValues[i + 2] * bgraValues1[i + 2];
+                        bgraValues1[i + 2] = Convert.ToByte(Normalize(result));
                         break;
                     case ECHANEL.RB:
-                        result = rgbValues[i] / rgbValues1[i];
-                        rgbValues1[i] = Convert.ToByte(Normalize(result));
-                        result = rgbValues[i + 2] / rgbValues1[i + 2];
-                        rgbValues1[i + 2] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i] * (1 - a) + bgraValues[i] * bgraValues1[i];
+                        bgraValues1[i] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i + 2] * (1 - a) + bgraValues[i + 2] * bgraValues1[i + 2];
+                        bgraValues1[i + 2] = Convert.ToByte(Normalize(result));
                         break;
                     case ECHANEL.GB:
-                        result = rgbValues[i] / rgbValues1[i];
-                        rgbValues1[i] = Convert.ToByte(Normalize(result));
-                        result = rgbValues[i + 1] / rgbValues1[i + 1];
-                        rgbValues1[i + 1] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i] * (1 - a) + bgraValues[i] * bgraValues1[i];
+                        bgraValues1[i] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i + 1] * (1 - a) + bgraValues[i + 1] * bgraValues1[i + 1];
+                        bgraValues1[i + 1] = Convert.ToByte(Normalize(result));
                         break;
                     case ECHANEL.R:
-                        result = rgbValues[i + 2] / rgbValues1[i + 2];
-                        rgbValues1[i + 2] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i + 2] * (1 - a) + bgraValues[i + 2] * bgraValues1[i + 2];
+                        bgraValues1[i + 2] = Convert.ToByte(Normalize(result));
                         break;
                     case ECHANEL.G:
-                        result = rgbValues[i + 1] / rgbValues1[i + 1];
-                        rgbValues1[i + 1] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i + 1] * (1 - a) + bgraValues[i + 1] * bgraValues1[i + 1];
+                        bgraValues1[i + 1] = Convert.ToByte(Normalize(result));
                         break;
                     case ECHANEL.B:
-                        result = rgbValues[i] / rgbValues1[i];
-                        rgbValues1[i] = Convert.ToByte(Normalize(result));
+                        result = bgraValues1[i] * (1 - a) + bgraValues[i] * bgraValues1[i];
+                        bgraValues1[i] = Convert.ToByte(Normalize(result));
                         break;
                 }
             }
-            System.Runtime.InteropServices.Marshal.Copy(rgbValues1, 0, ptr1, bytes);
-            pic.UnlockBits(bmpData);
-            bmp.UnlockBits(bmpData1);
         }
-        void Min(ECHANEL chanel, Bitmap pic)
+        void Division(ECHANEL chanel, byte[] bgraValues, ref byte[] bgraValues1)
         {
-            var bmpData = pic.LockBits(new Rectangle(0, 0, pic.Width, pic.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, pic.PixelFormat);
-            IntPtr ptr = bmpData.Scan0;
-            int bytes = Math.Abs(bmpData.Stride) * pic.Height;
-            byte[] rgbValues = new byte[bytes];
-            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, bytes);
 
-            var bmp = (Bitmap)ResultPic.Image;
-            BitmapData bmpData1 = bmp.LockBits(new Rectangle(0, 0, pic.Width, pic.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, pic.PixelFormat);
-            IntPtr ptr1 = bmpData1.Scan0;
-            byte[] rgbValues1 = new byte[bytes];
-            System.Runtime.InteropServices.Marshal.Copy(ptr1, rgbValues1, 0, bytes);
-            for (var i = 0; i < rgbValues1.Length; i += 4)
+            for (var i = 0; i < bgraValues1.Length; i += 4)
+            {
+                int result = 0;
+                switch (chanel)
+                {
+                    case ECHANEL.RGB:
+                        result = bgraValues[i] / bgraValues1[i];
+                        bgraValues1[i] = Convert.ToByte(Normalize(result));
+                        result = bgraValues[i + 1] / bgraValues1[i + 1];
+                        bgraValues1[i + 1] = Convert.ToByte(Normalize(result));
+                        result = bgraValues[i + 2] / bgraValues1[i + 2];
+                        bgraValues1[i + 2] = Convert.ToByte(Normalize(result));
+                        break;
+                    case ECHANEL.RG:
+                        result = bgraValues[i + 1] / bgraValues1[i + 1];
+                        bgraValues1[i + 1] = Convert.ToByte(Normalize(result));
+                        result = bgraValues[i + 2] / bgraValues1[i + 2];
+                        bgraValues1[i + 2] = Convert.ToByte(Normalize(result));
+                        break;
+                    case ECHANEL.RB:
+                        result = bgraValues[i] / bgraValues1[i];
+                        bgraValues1[i] = Convert.ToByte(Normalize(result));
+                        result = bgraValues[i + 2] / bgraValues1[i + 2];
+                        bgraValues1[i + 2] = Convert.ToByte(Normalize(result));
+                        break;
+                    case ECHANEL.GB:
+                        result = bgraValues[i] / bgraValues1[i];
+                        bgraValues1[i] = Convert.ToByte(Normalize(result));
+                        result = bgraValues[i + 1] / bgraValues1[i + 1];
+                        bgraValues1[i + 1] = Convert.ToByte(Normalize(result));
+                        break;
+                    case ECHANEL.R:
+                        result = bgraValues[i + 2] / bgraValues1[i + 2];
+                        bgraValues1[i + 2] = Convert.ToByte(Normalize(result));
+                        break;
+                    case ECHANEL.G:
+                        result = bgraValues[i + 1] / bgraValues1[i + 1];
+                        bgraValues1[i + 1] = Convert.ToByte(Normalize(result));
+                        break;
+                    case ECHANEL.B:
+                        result = bgraValues[i] / bgraValues1[i];
+                        bgraValues1[i] = Convert.ToByte(Normalize(result));
+                        break;
+                }
+            }
+        }
+        void Min(ECHANEL chanel, byte[] bgraValues, ref byte[] bgraValues1)
+        {
+            for (var i = 0; i < bgraValues1.Length; i += 4)
             {
                 switch (chanel)
                 {
                     case ECHANEL.RGB:
-                        rgbValues1[i] = rgbValues[i] < rgbValues1[i]? rgbValues[i]: rgbValues1[i];
-                        rgbValues1[i + 1] = rgbValues[i + 1] < rgbValues1[i + 1] ? rgbValues[i + 1] : rgbValues1[i + 1];
-                        rgbValues1[i + 2] = rgbValues[i + 2] < rgbValues1[i + 2] ? rgbValues[i + 2] : rgbValues1[i + 2];
+                        bgraValues1[i] = bgraValues[i] < bgraValues1[i]? bgraValues[i]: bgraValues1[i];
+                        bgraValues1[i + 1] = bgraValues[i + 1] < bgraValues1[i + 1] ? bgraValues[i + 1] : bgraValues1[i + 1];
+                        bgraValues1[i + 2] = bgraValues[i + 2] < bgraValues1[i + 2] ? bgraValues[i + 2] : bgraValues1[i + 2];
                         break;
                     case ECHANEL.RG:
-                        rgbValues1[i + 1] = rgbValues[i + 1] < rgbValues1[i + 1] ? rgbValues[i + 1] : rgbValues1[i + 1];
-                        rgbValues1[i + 2] = rgbValues[i + 2] < rgbValues1[i + 2] ? rgbValues[i + 2] : rgbValues1[i + 2];
+                        bgraValues1[i + 1] = bgraValues[i + 1] < bgraValues1[i + 1] ? bgraValues[i + 1] : bgraValues1[i + 1];
+                        bgraValues1[i + 2] = bgraValues[i + 2] < bgraValues1[i + 2] ? bgraValues[i + 2] : bgraValues1[i + 2];
                         break;
                     case ECHANEL.RB:
-                        rgbValues1[i] = rgbValues[i] < rgbValues1[i] ? rgbValues[i] : rgbValues1[i];
-                        rgbValues1[i + 2] = rgbValues[i + 2] < rgbValues1[i + 2] ? rgbValues[i + 2] : rgbValues1[i + 2];
+                        bgraValues1[i] = bgraValues[i] < bgraValues1[i] ? bgraValues[i] : bgraValues1[i];
+                        bgraValues1[i + 2] = bgraValues[i + 2] < bgraValues1[i + 2] ? bgraValues[i + 2] : bgraValues1[i + 2];
                         break;
                     case ECHANEL.GB:
-                        rgbValues1[i] = rgbValues[i] < rgbValues1[i] ? rgbValues[i] : rgbValues1[i];
-                        rgbValues1[i + 1] = rgbValues[i + 1] < rgbValues1[i + 1] ? rgbValues[i + 1] : rgbValues1[i + 1];
+                        bgraValues1[i] = bgraValues[i] < bgraValues1[i] ? bgraValues[i] : bgraValues1[i];
+                        bgraValues1[i + 1] = bgraValues[i + 1] < bgraValues1[i + 1] ? bgraValues[i + 1] : bgraValues1[i + 1];
                         break;
                     case ECHANEL.R:
-                        rgbValues1[i + 2] = rgbValues[i + 2] < rgbValues1[i + 2] ? rgbValues[i + 2] : rgbValues1[i + 2];
+                        bgraValues1[i + 2] = bgraValues[i + 2] < bgraValues1[i + 2] ? bgraValues[i + 2] : bgraValues1[i + 2];
                         break;
                     case ECHANEL.G:
-                        rgbValues1[i + 1] = rgbValues[i + 1] < rgbValues1[i + 1] ? rgbValues[i + 1] : rgbValues1[i + 1];
+                        bgraValues1[i + 1] = bgraValues[i + 1] < bgraValues1[i + 1] ? bgraValues[i + 1] : bgraValues1[i + 1];
                         break;
                     case ECHANEL.B:
-                        rgbValues1[i] = rgbValues[i] < rgbValues1[i] ? rgbValues[i] : rgbValues1[i];
+                        bgraValues1[i] = bgraValues[i] < bgraValues1[i] ? bgraValues[i] : bgraValues1[i];
                         break;
                 }
             }
-            System.Runtime.InteropServices.Marshal.Copy(rgbValues1, 0, ptr1, bytes);
-            pic.UnlockBits(bmpData);
-            bmp.UnlockBits(bmpData1);
         }
-        void Max(ECHANEL chanel, Bitmap pic)
+        void Max(ECHANEL chanel, byte[] bgraValues, ref byte[] bgraValues1)
         {
-            var bmpData = pic.LockBits(new Rectangle(0, 0, pic.Width, pic.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, pic.PixelFormat);
-            IntPtr ptr = bmpData.Scan0;
-            int bytes = Math.Abs(bmpData.Stride) * pic.Height;
-            byte[] rgbValues = new byte[bytes];
-            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, bytes);
-
-            var bmp = (Bitmap)ResultPic.Image;
-            BitmapData bmpData1 = bmp.LockBits(new Rectangle(0, 0, pic.Width, pic.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, pic.PixelFormat);
-            IntPtr ptr1 = bmpData1.Scan0;
-            byte[] rgbValues1 = new byte[bytes];
-            System.Runtime.InteropServices.Marshal.Copy(ptr1, rgbValues1, 0, bytes);
-            for (var i = 0; i < rgbValues1.Length; i += 4)
+            for (var i = 0; i < bgraValues1.Length; i += 4)
             {
                 switch (chanel)
                 {
                     case ECHANEL.RGB:
-                        rgbValues1[i] = rgbValues[i] > rgbValues1[i] ? rgbValues[i] : rgbValues1[i];
-                        rgbValues1[i + 1] = rgbValues[i + 1] > rgbValues1[i + 1] ? rgbValues[i + 1] : rgbValues1[i + 1];
-                        rgbValues1[i + 2] = rgbValues[i + 2] > rgbValues1[i + 2] ? rgbValues[i + 2] : rgbValues1[i + 2];
+                        bgraValues1[i] = bgraValues[i] > bgraValues1[i] ? bgraValues[i] : bgraValues1[i];
+                        bgraValues1[i + 1] = bgraValues[i + 1] > bgraValues1[i + 1] ? bgraValues[i + 1] : bgraValues1[i + 1];
+                        bgraValues1[i + 2] = bgraValues[i + 2] > bgraValues1[i + 2] ? bgraValues[i + 2] : bgraValues1[i + 2];
                         break;
                     case ECHANEL.RG:
-                        rgbValues1[i + 1] = rgbValues[i + 1] > rgbValues1[i + 1] ? rgbValues[i + 1] : rgbValues1[i + 1];
-                        rgbValues1[i + 2] = rgbValues[i + 2] > rgbValues1[i + 2] ? rgbValues[i + 2] : rgbValues1[i + 2];
+                        bgraValues1[i + 1] = bgraValues[i + 1] > bgraValues1[i + 1] ? bgraValues[i + 1] : bgraValues1[i + 1];
+                        bgraValues1[i + 2] = bgraValues[i + 2] > bgraValues1[i + 2] ? bgraValues[i + 2] : bgraValues1[i + 2];
                         break;
                     case ECHANEL.RB:
-                        rgbValues1[i] = rgbValues[i] > rgbValues1[i] ? rgbValues[i] : rgbValues1[i];
-                        rgbValues1[i + 2] = rgbValues[i + 2] > rgbValues1[i + 2] ? rgbValues[i + 2] : rgbValues1[i + 2];
+                        bgraValues1[i] = bgraValues[i] > bgraValues1[i] ? bgraValues[i] : bgraValues1[i];
+                        bgraValues1[i + 2] = bgraValues[i + 2] > bgraValues1[i + 2] ? bgraValues[i + 2] : bgraValues1[i + 2];
                         break;
                     case ECHANEL.GB:
-                        rgbValues1[i] = rgbValues[i] > rgbValues1[i] ? rgbValues[i] : rgbValues1[i];
-                        rgbValues1[i + 1] = rgbValues[i + 1] > rgbValues1[i + 1] ? rgbValues[i + 1] : rgbValues1[i + 1];
+                        bgraValues1[i] = bgraValues[i] > bgraValues1[i] ? bgraValues[i] : bgraValues1[i];
+                        bgraValues1[i + 1] = bgraValues[i + 1] > bgraValues1[i + 1] ? bgraValues[i + 1] : bgraValues1[i + 1];
                         break;
                     case ECHANEL.R:
-                        rgbValues1[i + 2] = rgbValues[i + 2] > rgbValues1[i + 2] ? rgbValues[i + 2] : rgbValues1[i + 2];
+                        bgraValues1[i + 2] = bgraValues[i + 2] > bgraValues1[i + 2] ? bgraValues[i + 2] : bgraValues1[i + 2];
                         break;
                     case ECHANEL.G:
-                        rgbValues1[i + 1] = rgbValues[i + 1] > rgbValues1[i + 1] ? rgbValues[i + 1] : rgbValues1[i + 1];
+                        bgraValues1[i + 1] = bgraValues[i + 1] > bgraValues1[i + 1] ? bgraValues[i + 1] : bgraValues1[i + 1];
                         break;
                     case ECHANEL.B:
-                        rgbValues1[i] = rgbValues[i] > rgbValues1[i] ? rgbValues[i] : rgbValues1[i];
+                        bgraValues1[i] = bgraValues[i] > bgraValues1[i] ? bgraValues[i] : bgraValues1[i];
                         break;
                 }
             }
-            System.Runtime.InteropServices.Marshal.Copy(rgbValues1, 0, ptr1, bytes);
-            pic.UnlockBits(bmpData);
-            bmp.UnlockBits(bmpData1);
+        }
+
+        void Get_Gistogram(object sender, System.EventArgs e)
+        {
+            Form2 F = new Form2();
+            F.Get_Grafisc((Bitmap)ResultPic.Image.Clone());
+            F.Show();
+            
         }
     }
 }

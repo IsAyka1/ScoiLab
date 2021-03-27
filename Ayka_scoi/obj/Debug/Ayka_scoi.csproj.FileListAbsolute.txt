@@ -28,3 +28,4 @@ C:\Users\mtara\Desktop\ScoiLab\Ayka_scoi\obj\Debug\Ayka_scoi.csproj.GenerateReso
 C:\Users\mtara\Desktop\ScoiLab\Ayka_scoi\obj\Debug\Ayka_scoi.csproj.CoreCompileInputs.cache
 C:\Users\mtara\Desktop\ScoiLab\Ayka_scoi\obj\Debug\Ayka_scoi.exe
 C:\Users\mtara\Desktop\ScoiLab\Ayka_scoi\obj\Debug\Ayka_scoi.pdb
+C:\Users\mtara\Desktop\ScoiLab\Ayka_scoi\obj\Debug\Ayka_scoi.Form2.resources
