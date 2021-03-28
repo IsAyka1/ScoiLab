@@ -50,7 +50,8 @@ namespace Ayka_scoi
             chartArea1.AxisY.Minimum = 0D;
             chartArea1.Name = "ChartArea1";
             this.chartOrig.ChartAreas.Add(chartArea1);
-            this.chartOrig.Location = new System.Drawing.Point(451, 15);
+            this.chartOrig.Location = new System.Drawing.Point(601, 18);
+            this.chartOrig.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.chartOrig.Name = "chartOrig";
             this.chartOrig.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.Grayscale;
             series1.ChartArea = "ChartArea1";
@@ -60,7 +61,7 @@ namespace Ayka_scoi
             series1.MarkerBorderColor = System.Drawing.Color.Red;
             series1.Name = "Series1";
             this.chartOrig.Series.Add(series1);
-            this.chartOrig.Size = new System.Drawing.Size(344, 189);
+            this.chartOrig.Size = new System.Drawing.Size(459, 233);
             this.chartOrig.TabIndex = 1;
             this.chartOrig.Text = "chart1";
             title1.Name = "Title1";
@@ -75,14 +76,15 @@ namespace Ayka_scoi
             chartArea2.AxisY.Minimum = 0D;
             chartArea2.Name = "ChartArea1";
             this.chartChange.ChartAreas.Add(chartArea2);
-            this.chartChange.Location = new System.Drawing.Point(448, 226);
+            this.chartChange.Location = new System.Drawing.Point(597, 278);
+            this.chartChange.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.chartChange.Name = "chartChange";
             this.chartChange.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.Grayscale;
             series2.ChartArea = "ChartArea1";
             series2.MarkerBorderColor = System.Drawing.Color.White;
             series2.Name = "Series1";
             this.chartChange.Series.Add(series2);
-            this.chartChange.Size = new System.Drawing.Size(346, 207);
+            this.chartChange.Size = new System.Drawing.Size(461, 255);
             this.chartChange.TabIndex = 2;
             this.chartChange.Text = "chart2";
             title2.Name = "Title1";
@@ -91,11 +93,12 @@ namespace Ayka_scoi
             // 
             // Form2
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(1067, 554);
             this.Controls.Add(this.chartChange);
             this.Controls.Add(this.chartOrig);
+            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.Name = "Form2";
             this.Text = "Form2";
             ((System.ComponentModel.ISupportInitialize)(this.chartOrig)).EndInit();
