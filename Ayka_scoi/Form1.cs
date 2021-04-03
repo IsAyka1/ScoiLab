@@ -595,7 +595,7 @@ namespace Ayka_scoi
 
         void Get_Gistogram(object sender, System.EventArgs e)
         {
-            Form2 F = new Form2();
+            Form2 F = new Form2(ResultPic);
             F.Focus();
             F.Show();
             F.Get_Grafisc((Bitmap)ResultPic.Image.Clone());
@@ -604,9 +604,9 @@ namespace Ayka_scoi
 
         private void Gistogram_Close(object sender, FormClosedEventArgs e)
         {
-            //throw new NotImplementedException();
             Form2 F = (Form2)sender;
             ResultPic.Image = F.Changer;
+            F.Dispose();
         }
     }
 }

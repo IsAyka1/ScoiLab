@@ -12,7 +12,7 @@ namespace Ayka_scoi
     class Pan : System.Windows.Forms.Panel
     { 
         private bool paint_mode = false;
-        List<Point> PointsSpline = new List<Point>();
+        Dictionary<int, int> PointsSpline = new Dictionary<int, int>();
         List<Point> Points = new List<Point>();
         public Pan(ref List<Point> Points)
         {
@@ -51,7 +51,7 @@ namespace Ayka_scoi
 
         }
 
-        public void DrawSpline(List<Point> Spline)
+        public void DrawSpline(Dictionary<int, int> Spline)
         {
             PointsSpline = Spline;
         }
@@ -74,25 +74,41 @@ namespace Ayka_scoi
 
         private void Pan_MouseUp(object sender, MouseEventArgs e)
         {
-            paint_mode = false;
-            var a = (Form2)this.Parent;
-            a.LetsSpline();
+            if (e.Button == MouseButtons.Left)
+            {
+                paint_mode = false;
+                var a = (Form2)this.Parent;
+                a.LetsSpline();
+            }
         }
 
         private void Pan_MouseDown(object sender, MouseEventArgs e)
         {
             int X = e.Location.X;
             int Y = e.Location.Y;
-            for (int i = 0; i < Points.Count; ++i)
+            if (e.Button == MouseButtons.Left)
             {
-                if ((X >= Points[i].X - 5 && X <= Points[i].X + 5) && (Y >= Points[i].Y - 5 && Y <= Points[i].Y + 5))
+                for (int i = 0; i < Points.Count; ++i)
                 {
-                    paint_mode = true;
-                    return;
+                    if ((X >= Points[i].X - 5 && X <= Points[i].X + 5) && (Y >= Points[i].Y - 5 && Y <= Points[i].Y + 5))
+                    {
+                        paint_mode = true;
+                        return;
+                    }
+                }
+                NormalyzePoints(new Point(X, Y));
+            } else
+            {
+                for (int i = 0; i < Points.Count; ++i)
+                {
+                    if ((X >= Points[i].X - 5 && X <= Points[i].X + 5) && (Y >= Points[i].Y - 5 && Y <= Points[i].Y + 5))
+                    {
+                        Points.RemoveAt(i);
+                        var a = (Form2)this.Parent;
+                        a.LetsSpline();
+                    }
                 }
             }
-            NormalyzePoints(new Point(X, Y));
-
         }
 
         void NormalyzePoints(Point tmp)
@@ -132,7 +148,7 @@ namespace Ayka_scoi
             {
                 for (int i = 0; i < PointsSpline.Count - 1; ++i)
                 {
-                    e.Graphics.DrawLine(Pens.Black, PointsSpline[i], PointsSpline[i + 1]);
+                    e.Graphics.DrawLine(Pens.Black, i, PointsSpline[i], i+1, PointsSpline[i + 1]);
                 }
             }
             //событие отрисовки вызывается, когда ОС дает окну команду на перересовку.

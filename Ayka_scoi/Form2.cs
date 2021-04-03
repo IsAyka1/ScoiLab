@@ -11,16 +11,19 @@ using System.Windows.Forms;
 
 namespace Ayka_scoi
 {
-    
     public partial class Form2 : Form
     {
         private int[] PixArray;
+        public PictureBox Pb { get; set; }
         List<Point> Points = new List<Point>();
-        List<Point> PointsSpline = new List<Point>();
+        Dictionary<int, int> PointsSpline = new Dictionary<int, int>();
         public Bitmap Changer;
-        public Form2()
+        public Bitmap Static;
+        public Form2(PictureBox FPb)
         {
             InitializeComponent();
+            Pb = FPb;
+            Static = (Bitmap)Pb.Image.Clone();
             var Panel = new Pan(ref Points);
             Panel.Size = new Size(420, 420);
             Panel.Location = new Point(15, 15);
@@ -31,16 +34,15 @@ namespace Ayka_scoi
             Array.Clear(PixArray, 0, PixArray.Length);
         }
 
-        public void Get_Grafisc(Bitmap Result)
+        public async void Get_Grafisc(Bitmap Result)
         {
             Changer = Result;
-            int maxOrig = Get_Array((Bitmap)Result.Clone());
-            Set_ChartOrig(maxOrig);
-            
+                int maxOrig = Get_Array((Bitmap)Result.Clone());
+                Set_ChartOrig(maxOrig);
             if (Points.Count != 2)
-            {
-                LetsSpline();
-            }
+                {
+                    LetsSpline();
+                } 
         }
 
 
@@ -65,7 +67,7 @@ namespace Ayka_scoi
             return max;
         }
 
-        public void LetsSpline()
+        public async void LetsSpline()
         {
             PointsSpline.Clear();
             double B = 0;
@@ -89,55 +91,47 @@ namespace Ayka_scoi
                 CalculateSpline(h, a, b, c, Points[i]);
             }
 
-            ChangePic();
-
             var pan = (Pan)GetChildAtPoint(new Point(15, 15));
             pan.DrawSpline(PointsSpline);
 
+            Changer.Dispose();
+            Changer = (Bitmap)Static.Clone();
+            Bitmap tmp = await Task.Run(() => ChangePicAsync((Bitmap)Changer.Clone()));
+            Changer.Dispose();
+            Changer = tmp;
+
+            int maxChange = Get_Array((Bitmap)Changer.Clone());
+            Set_ChartChange(maxChange);
         }
 
-        void ChangePic()
+        Bitmap ChangePicAsync(Bitmap tmp)
         {
-            double k = 420 / 255;
-            BitmapData bmpData = Changer.LockBits(new Rectangle(0, 0, Changer.Width, Changer.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, Changer.PixelFormat);
+
+            double k = 419.0 / 255;
+            BitmapData bmpData = tmp.LockBits(new Rectangle(0, 0, Changer.Width, Changer.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, Changer.PixelFormat);
             IntPtr ptr1 = bmpData.Scan0;
             int bytes = Math.Abs(bmpData.Stride) * Changer.Height;
+            
             byte[] bgraValues = new byte[bytes];
+            
             System.Runtime.InteropServices.Marshal.Copy(ptr1, bgraValues, 0, bytes);
-
+            byte[] value2 = (byte[])bgraValues.Clone();
             for (var i = 0; i < bgraValues.Length; i += 4)
             {
                 double index = bgraValues[i] * k;
-                foreach( var elem in PointsSpline) {
-                    if(elem.X == (int)index)
-                    {
-                        bgraValues[i] = (byte)elem.Y; break;
-                    }
-                }
+                bgraValues[i] = (byte)((419 - PointsSpline[(int)Math.Round(index, 0)]) / k); 
                 
                 index = bgraValues[i + 1] * k;
-                foreach (var elem in PointsSpline)
-                {
-                    if (elem.X == (int)index)
-                    {
-                        bgraValues[i + 1] = (byte)elem.Y; break;
-                    }
-                }
+                bgraValues[i + 1] = (byte)((419 - PointsSpline[(int)Math.Round(index, 0)]) / k);
 
                 index = bgraValues[i + 2] * k;
-                foreach (var elem in PointsSpline)
-                {
-                    if (elem.X == (int)index)
-                    {
-                        bgraValues[i + 2] = (byte)elem.Y; break;
-                    }
-                }
+                bgraValues[i + 2] = (byte)((419 - PointsSpline[(int)Math.Round(index, 0)]) / k);
             }
-            System.Runtime.InteropServices.Marshal.Copy(bgraValues, 0, ptr1, bytes);
-            Changer.UnlockBits(bmpData);
-            int maxChange = Get_Array((Bitmap)Changer.Clone());
-            Set_ChartChange(maxChange);
 
+            System.Runtime.InteropServices.Marshal.Copy(bgraValues, 0, ptr1, bytes);
+            tmp.UnlockBits(bmpData);
+            Pb.Image = tmp;
+            return tmp;
         }
 
         void CalculateSpline(double h, double a, double b, double c, Point tmp)
@@ -151,26 +145,38 @@ namespace Ayka_scoi
                 X = X < 0 ? 0 : X;
                 Y = Y > 420 ? 420 : Y;
                 Y = Y < 0 ? 0 : Y;
-                PointsSpline.Add(new Point(X, Y));
+                PointsSpline.Add(X, Y);
             }
         }
 
         void Set_ChartOrig(int max)
         {
-            for (int i = 0; i < PixArray.Length; ++i)
+            try
             {
-                this.chartOrig.Series[0].Points.AddXY(i, PixArray[i]);
+                for (int i = 0; i < PixArray.Length; ++i)
+                {
+                    this.chartOrig.Series[0].Points.AddXY(i, PixArray[i]);
+                }
+                this.chartOrig.ChartAreas[0].AxisY.Maximum = max;
             }
-            this.chartOrig.ChartAreas[0].AxisY.Maximum = max;
+            catch (NullReferenceException)
+            {
+
+            }
         }
         void Set_ChartChange(int max)
         {
-            for (int i = 0; i < PixArray.Length; ++i)
-            {
-                this.chartChange.Series[0].Points.AddXY(i, PixArray[i]);
+            try {
+                for (int i = 0; i < PixArray.Length; ++i)
+                {
+                    this.chartChange.Series[0].Points.AddXY(i, PixArray[i]);
+                }
+                this.chartChange.ChartAreas[0].AxisY.Maximum = max;
             }
-            this.chartChange.ChartAreas[0].AxisY.Maximum = max;
-            
+            catch(NullReferenceException e)
+            {
+                return;
+            }
         }
     }
 }
