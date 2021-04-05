@@ -13,40 +13,39 @@ namespace Ayka_scoi
 {
     public partial class Form2 : Form
     {
-        private int[] PixArray;
-        public PictureBox Pb { get; set; }
+        static public int[] PixArray = new int[256];
+        public Image Img { get; set; }
         List<Point> Points = new List<Point>();
         Dictionary<int, int> PointsSpline = new Dictionary<int, int>();
         public Bitmap Changer;
         public Bitmap Static;
-        public Form2(PictureBox FPb)
+        public Form2(Bitmap Pb)
         {
             InitializeComponent();
-            Pb = FPb;
-            Static = (Bitmap)Pb.Image.Clone();
+            Img = Pb;
+            Static = (Bitmap)Pb.Clone();
             var Panel = new Pan(ref Points);
             Panel.Size = new Size(420, 420);
             Panel.Location = new Point(15, 15);
             Panel.Padding = new Padding(0);
             Panel.BackColor = Color.LightGray;
             this.Controls.Add(Panel);
-            PixArray = new int[256];
             Array.Clear(PixArray, 0, PixArray.Length);
         }
 
         public async void Get_Grafisc(Bitmap Result)
         {
             Changer = Result;
-                int maxOrig = Get_Array((Bitmap)Result.Clone());
-                Set_ChartOrig(maxOrig);
+            int maxOrig = Get_Array((Bitmap)Result.Clone());
+            Set_ChartOrig(maxOrig);
             if (Points.Count != 2)
-                {
+            {
                     LetsSpline();
-                } 
+            } 
         }
 
-
-        int Get_Array(Bitmap ResultPic)
+        
+        public static int Get_Array(Bitmap ResultPic)
         {
             Array.Clear(PixArray, 0, PixArray.Length);
             int max = 0;
@@ -61,7 +60,7 @@ namespace Ayka_scoi
                 PixArray[result]++;
                 if (PixArray[result] > max) max = PixArray[result];
             }
-                System.Runtime.InteropServices.Marshal.Copy(bgraValues, 0, ptr1, bytes);
+            System.Runtime.InteropServices.Marshal.Copy(bgraValues, 0, ptr1, bytes);
             ResultPic.UnlockBits(bmpData);
             ResultPic.Dispose();
             return max;
@@ -130,7 +129,7 @@ namespace Ayka_scoi
 
             System.Runtime.InteropServices.Marshal.Copy(bgraValues, 0, ptr1, bytes);
             tmp.UnlockBits(bmpData);
-            Pb.Image = tmp;
+            Img = tmp;
             return tmp;
         }
 

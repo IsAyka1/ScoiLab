@@ -32,6 +32,4 @@ namespace Ayka_scoi
             plane = ptr;
         }
     }
-
-   
 }

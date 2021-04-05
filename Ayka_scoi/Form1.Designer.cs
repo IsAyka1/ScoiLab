@@ -29,25 +29,14 @@ namespace Ayka_scoi
         /// </summary>
         private void InitializeComponent()
         {
-            this.BAdd = new System.Windows.Forms.Button();
             this.SuspendLayout();
-            // 
-            // BAdd
-            // 
-            this.BAdd.Location = new System.Drawing.Point(12, 414);
-            this.BAdd.Name = "BAdd";
-            this.BAdd.Size = new System.Drawing.Size(104, 30);
-            this.BAdd.TabIndex = 0;
-            this.BAdd.Text = "Добавить";
-            this.BAdd.UseVisualStyleBackColor = true;
-            this.BAdd.Click += new System.EventHandler(this.BAdd_Click);
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.BAdd);
+            this.ClientSize = new System.Drawing.Size(1067, 554);
+            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.Name = "Form1";
             this.Text = "Form1";
             this.ResumeLayout(false);
@@ -55,8 +44,6 @@ namespace Ayka_scoi
         }
 
         #endregion
-
-        private System.Windows.Forms.Button BAdd;
     }
 }
 
