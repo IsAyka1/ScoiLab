@@ -105,7 +105,6 @@ namespace Ayka_scoi
 
         Bitmap ChangePicAsync(Bitmap tmp)
         {
-
             double k = 419.0 / 255;
             BitmapData bmpData = tmp.LockBits(new Rectangle(0, 0, Changer.Width, Changer.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, Changer.PixelFormat);
             IntPtr ptr1 = bmpData.Scan0;

@@ -12,7 +12,7 @@ namespace Ayka_scoi
     {
         void GetBinariz()
         {
-            var bmp = (Bitmap)ResultPic.Image;
+            var bmp = new Bitmap(ResultPic.Image);
             BitmapData bmpData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, bmp.PixelFormat);
             IntPtr ptr = bmpData.Scan0;
             int bytes = Math.Abs(bmpData.Stride) * bmp.Height;
@@ -34,27 +34,43 @@ namespace Ayka_scoi
                     }
                 case EBINAR.Niblek:
                     {
-                        LocalBinar(bgraValues, bmp.Width, bmp.Height);
+                        //LocalBinar(bgraValues, bmp.Width, bmp.Height);
+                        LocalBinarOptimyz(bgraValues, bmp.Height, bmp.Width);
                         break;
                     }
                 case EBINAR.Sauvola:
                     {
-                        LocalBinar(bgraValues, bmp.Width, bmp.Height);
+                        LocalBinarOptimyz(bgraValues, bmp.Height, bmp.Width);
                         break;
                     }
                 case EBINAR.BredliRot:
                     {
-                        LocalBinar(bgraValues, bmp.Width, bmp.Height);
+                        LocalBinarOptimyz(bgraValues, bmp.Height, bmp.Width);
                         break;
                     }
                 case EBINAR.Wulf:
                     {
-                        LocalBinar(bgraValues, bmp.Width, bmp.Height);
+                        Form2.Get_Array((Bitmap)ResultPic.Image.Clone());
+                        double[] Gisto = new double[Form2.PixArray.Length];
+                        int min = 257;
+                        int minIndex = -1;
+                            for (int i = 0; i < Gisto.Length; ++i)
+                            {
+                                Gisto[i] = (double)Form2.PixArray[i];
+                                if (Gisto[i] < min)
+                                {
+                                    min = (int)Gisto[i];
+                                    minIndex = i;
+                                }
+                            }
+                        LocalBinarOptimyz(bgraValues, bmp.Height, bmp.Width, minIndex);
                         break;
                     }
             }
             System.Runtime.InteropServices.Marshal.Copy(bgraValues, 0, ptr, bytes);
             bmp.UnlockBits(bmpData);
+            ResultPic.Image.Dispose();
+            ResultPic.Image = bmp;
         }
 
         void GetMonochrom(byte[] bgraValues)
@@ -154,37 +170,39 @@ namespace Ayka_scoi
             return Sum;
         }
 
-        void LocalBinar(byte[] bgraValues, int w, int h)
+        void LocalBinar(byte[] bgraValues, int w, int h, double Maxq = 0, int min = -1)
         {
             int a = 15;
-            double koef = -0.2;
-            int[] squard = new int[a*a];
+            int[] squard = new int[a * a];
             int[] t = new int[bgraValues.Length / 4];
-            Form2.Get_Array((Bitmap)ResultPic.Image.Clone());
-            double[] Gisto = new double[Form2.PixArray.Length];
-            int min = 257;
-            int minIndex = -1;
-            for (int i = 0; i < Gisto.Length; ++i)
-            {
-                Gisto[i] = (double)Form2.PixArray[i];
-                if(Gisto[i] < min)
-                {
-                    min = (int)Gisto[i];
-                    minIndex = i;
-                }
-            }
-            for (int y = 0; y < h; y ++)
+            //Form2.Get_Array((Bitmap)ResultPic.Image.Clone());
+            //double[] Gisto = new double[Form2.PixArray.Length];
+            //int min = 257;
+            //int minIndex = -1;
+            //double Maxq = await Task.Run(() => GetMaxq((byte[])bgraValues.Clone(), w, h, a));
+            //for (int i = 0; i < Gisto.Length; ++i)
+            //{
+            //    Gisto[i] = (double)Form2.PixArray[i];
+            //    if (Gisto[i] < min)
+            //    {
+            //        min = (int)Gisto[i];
+            //        minIndex = i;
+            //    }
+            //}
+            //TODO M&D in arr
+
+            for (int y = 0; y < h; y++)
             {
                 for (int x = 0; x < w; x++)
                 {
                     Array.Clear(squard, 0, squard.Length);
                     var _x = x - a / 2;
                     var _y = y - a / 2;
-                    for(int ky = 0; ky < a; ++ky)
+                    for (int ky = 0; ky < a; ++ky)
                     {
                         for (int kx = 0; kx < a; ++kx)
                         {
-                            squard[ky * a + kx] = GetPic(_x + kx, _y + ky, w, h, bgraValues);
+                            squard[ky * a + kx] = GetPix(_x + kx, _y + ky, w, h, bgraValues);
                         }
                     }
                     var M = GetM(squard);
@@ -195,23 +213,23 @@ namespace Ayka_scoi
                     {
                         case EBINAR.Niblek:
                             {
-                                Niblek(ref t, y * w + x, M, koef, q);
+                               t[y * w + x] =  Niblek(M, q, a);
                                 break;
                             }
                         case EBINAR.Sauvola:
                             {
-                                Sauvola(ref t, y * w + x, M, koef, q);
+                                //Sauvola(ref t, y * w + x, M, q);
                                 break;
                             }
                         case EBINAR.Wulf:
                             {
-                                Wulf(ref t, y * w + x, M, minIndex, q);
+                                //Wulf(ref t, y * w + x, M, min, q, Maxq);
                                 break;
                             }
-                    }
+                    }//TODO менять сразу t/ не масив ??
                 }
             }
-            for(int i = 0; i < bgraValues.Length; i += 4)
+            for (int i = 0; i < bgraValues.Length; i += 4)
             {
                 byte BiValue = (byte)GetBiValue(bgraValues[i], t[i / 4]);
                 bgraValues[i + 0] = BiValue;
@@ -220,28 +238,151 @@ namespace Ayka_scoi
             }
         }
 
-        void Niblek(ref int[] t, int i, int M, double k, double q)
+        void LocalBinarOptimyz(byte[] bgraValues, int h, int w, int min = -1)
         {
-            t[i] = (int)Math.Round(M + k * q, 0);
+            int a = 15;
+            double k = 0.15; //rote
+            int[] t = new int[bgraValues.Length / 4];
+            long[,] M = new long[h, w];
+            long[,] M2 = new long[h, w];
+            
+            //var Maxq = GetIntegralM(ref M, ref q, h, w, a, bgraValues);
+            GetIntegralM(ref M, ref M2, h, w, bgraValues);
+            var Maxq = min != -1 ? GetMaxq(M, M2, h, w, a) : 0;
+            for (int y = 0; y < h; ++y)
+            {
+                for (int x = 0; x < w; ++x)
+                {
+                    var m = Rote(M, x, y, h, w, a);
+                    var m2 = Rote(M2, x, y, h, w, a);
+                    var d = m2 - m * m;
+                    var q = Math.Sqrt(d);
+                    switch (EBinar)
+                    {
+                        case EBINAR.Niblek:
+                            {
+                                t[y * w + x] = Niblek(m, q);
+                                break;
+                            }
+                        case EBINAR.Sauvola:
+                            {
+                                t[y * w + x] = Sauvola(m, q);
+                                break;
+                            }
+                        case EBINAR.Wulf:
+                            {
+                                t[y * w + x] = Wulf(m, min, q, Maxq);
+                                break;
+                            }
+                        case EBINAR.BredliRot:
+                            {
+                                t[y * w + x] = (int)(Rote(M, x, y, h, w, a) * (1 - k));
+                                break;
+                            }
+                    }
+                    byte BiValue = (byte)GetBiValue(bgraValues[(y * w + x) * 4], t[y * w + x]);
+                    bgraValues[(y * w + x) * 4 + 0] = BiValue;
+                    bgraValues[(y * w + x) * 4 + 1] = BiValue;
+                    bgraValues[(y * w + x) * 4 + 2] = BiValue;
+                }
+            }
         }
 
-        int GetPic(int x, int y, int w, int h, byte[] bgraValues)
+        double GetMaxq(Bitmap bmp, int w, int h, int a)
+        {
+            BitmapData bmpData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, bmp.PixelFormat);
+            IntPtr ptr = bmpData.Scan0;
+            int bytes = Math.Abs(bmpData.Stride) * bmp.Height;
+            byte[] bgraValues = new byte[bytes];
+            System.Runtime.InteropServices.Marshal.Copy(ptr, bgraValues, 0, bytes);
+
+            int[] squard = new int[a * a];
+            double Maxq = 0;
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    Array.Clear(squard, 0, squard.Length);
+                    var _x = x - a / 2;
+                    var _y = y - a / 2;
+                    for (int ky = 0; ky < a; ++ky)
+                    {
+                        for (int kx = 0; kx < a; ++kx)
+                        {
+                            squard[ky * a + kx] = GetPix(_x + kx, _y + ky, w, h, bgraValues);
+                        }
+                    }
+                    var M = GetM(squard);
+                    var M2 = GetM2(squard);
+                    var D = M2 - (M * M);
+                    var q = Math.Sqrt(D);
+                    Maxq = q > Maxq ? q : Maxq;
+                }
+            }
+
+            System.Runtime.InteropServices.Marshal.Copy(bgraValues, 0, ptr, bytes);
+            bmp.UnlockBits(bmpData);
+            return Maxq;
+        }
+
+        double GetMaxq(long[,] M, long[,] M2, int h, int w, int a)
+        {
+            double Maxq = -1;
+            for (int y = 0; y < h; ++y)
+            {
+                for (int x = 0; x < w; ++x)
+                {
+                    var m = Rote(M, x, y, h, w, a);
+                    var m2 = Rote(M2, x, y, h, w, a);
+                    var d = m2 - m * m;
+                    var q = Math.Sqrt(d);
+                    Maxq = q > Maxq ? q : Maxq;
+                }
+            }
+            return Maxq;
+        }
+
+        int Niblek(double M, double q,double k = -0.2)
+        {
+            return (int)Math.Round(M + k * q, 0);
+        }
+
+        int GetPix(int x, int y, int w, int h, byte[] bgraValues)
         {
             if(x < 0 || x >= w || y < 0 || y >= h)
             {
                 return 0;
             }
-            return bgraValues[(y * w + x) * 4 + 1];
+            return bgraValues[(y * w + x) * 4];
         }
 
-        int GetM(int[] arr)
+        void GetIntegralM(ref long[,] m, ref long[,] m2, int h, int w, byte[] bgraValue)
         {
-            var Sum = 0;
-            for(int i = 0; i < arr.Length; ++i)
+            for (int y = 0; y < h; ++y)
             {
-                Sum += arr[i];
+                for (int x = 0; x < w; ++x)
+                {
+                    var i = GetPix(x, y, w, h, bgraValue);
+                    var s1 = x - 1 < 0 || y < 0 || x - 1 >= w || y >= h ? 0 : m[y, x - 1];
+                    var s2 = x < 0 || y - 1 < 0 || x >= w || y - 1 >= h ? 0 : m[y - 1, x];
+                    var s3 = x - 1 < 0 || y - 1 < 0 || x - 1 >= w || y - 1 >= h ? 0 : m[y - 1, x - 1];
+                    m[y, x] = i + s1 + s2 - s3;
+                    s1 = x - 1 < 0 || y < 0 || x - 1 >= w || y >= h ? 0 : m2[y, x - 1];
+                    s2 = x < 0 || y - 1 < 0 || x >= w || y - 1 >= h ? 0 : m2[y - 1, x];
+                    s3 = x - 1 < 0 || y - 1 < 0 || x - 1 >= w || y - 1 >= h ? 0 : m2[y - 1, x - 1];
+                    m2[y, x] = i * i + s1 + s2 - s3;
+                }
             }
-            return Sum / arr.Length;
+
+        }
+        int Rote(long[,] s, int x, int y, int hei, int wid, int a)
+        {
+            int h = a / 2;
+            var y1 = (y - h - 1 < 0) || (x - h - 1 < 0) || (y - h - 1 >= hei) || (x - h - 1 >= wid) ? 0 : s[y - h - 1, x - h - 1]; //done
+            var y2 = (y - h - 1 < 0) || (x + h < 0) || (y - h - 1 >= hei) || (x + h >= wid) ? 0 : s[y - h - 1, x + h]; //done
+            var x1 = (y + h < 0) || (x - h - 1 < 0) || (y + h >= hei) || (x - h - 1 >= wid) ? 0 : s[y + h, x - h - 1]; //done
+            var x2 = (y + h < 0) || (x + h < 0) || (y + h >= hei) || (x + h >= wid) ? 0 : s[y + h, x + h]; //done
+            return (int)(x2 + y1 - x1 - y2) / (a * a);
         }
 
         int GetM2(int[] arr)
@@ -254,20 +395,27 @@ namespace Ayka_scoi
             return Sum / arr.Length;
         }
 
-        void Sauvola(ref int[] t, int i, int M, double k, double q)
+        int GetM(int[] arr)
+        {
+            var Sum = 0;
+            for (int i = 0; i < arr.Length; ++i)
+            {
+                Sum += arr[i];
+            }
+            return Sum / arr.Length;
+        }
+
+        int Sauvola(double M, double q, double k = 0.2)
         {
             int R = 128;
-            t[i] = M * (int)Math.Round(1 + k * (q / R - 1), 0);
+            //t[i] = M * (int)Math.Round(1 + k * ((q / R) - 1), 0);
+            //t[i] = (int)Math.Round(M * 1 + k * ((q / R) - 1));
+            return (int)(M + (int)(1 + k * ((q / R) - 1)));
         }
-        void Wulf(ref int[] t, int i, int min, double M, double q)
+        int Wulf(double M, double min, double q, double R)
         {
             double a = 0.5;
-            int R = 128;
-            t[i] = (int)(Math.Round((1 - a) * M + a * min + a * (q / R) * (M - min), 0));
-        }
-        void BredliRot(byte[] bgraValues)
-        {
-
+            return (int)(Math.Round((1 - a) * M  + a * min + a * q / R * (M - min), 0));
         }
     }
 }
