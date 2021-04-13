@@ -29,3 +29,14 @@ C:\Users\mtara\Desktop\ScoiLab\Ayka_scoi\obj\Debug\Ayka_scoi.csproj.CoreCompileI
 C:\Users\mtara\Desktop\ScoiLab\Ayka_scoi\obj\Debug\Ayka_scoi.exe
 C:\Users\mtara\Desktop\ScoiLab\Ayka_scoi\obj\Debug\Ayka_scoi.pdb
 C:\Users\mtara\Desktop\ScoiLab\Ayka_scoi\obj\Debug\Ayka_scoi.Form2.resources
+C:\Users\student\Desktop\ScoiLab\Ayka_scoi\bin\Debug\Ayka_scoi.exe.config
+C:\Users\student\Desktop\ScoiLab\Ayka_scoi\bin\Debug\Ayka_scoi.exe
+C:\Users\student\Desktop\ScoiLab\Ayka_scoi\bin\Debug\Ayka_scoi.pdb
+C:\Users\student\Desktop\ScoiLab\Ayka_scoi\obj\Debug\Ayka_scoi.csprojAssemblyReference.cache
+C:\Users\student\Desktop\ScoiLab\Ayka_scoi\obj\Debug\Ayka_scoi.Form1.resources
+C:\Users\student\Desktop\ScoiLab\Ayka_scoi\obj\Debug\Ayka_scoi.Form2.resources
+C:\Users\student\Desktop\ScoiLab\Ayka_scoi\obj\Debug\Ayka_scoi.Properties.Resources.resources
+C:\Users\student\Desktop\ScoiLab\Ayka_scoi\obj\Debug\Ayka_scoi.csproj.GenerateResource.cache
+C:\Users\student\Desktop\ScoiLab\Ayka_scoi\obj\Debug\Ayka_scoi.csproj.CoreCompileInputs.cache
+C:\Users\student\Desktop\ScoiLab\Ayka_scoi\obj\Debug\Ayka_scoi.exe
+C:\Users\student\Desktop\ScoiLab\Ayka_scoi\obj\Debug\Ayka_scoi.pdb

@@ -51,18 +51,38 @@ namespace Ayka_scoi
                 case EBINAR.Wulf:
                     {
                         Form2.Get_Array((Bitmap)ResultPic.Image.Clone());
-                        double[] Gisto = new double[Form2.PixArray.Length];
-                        int min = 257;
-                        int minIndex = -1;
-                            for (int i = 0; i < Gisto.Length; ++i)
+                        int[] Gisto = new int[Form2.PixArray.Length];
+                        int minIndex = 0;
+                        #region poisk
+                        //for (int i = 0; i < Gisto.Length; ++i)
+                        //{
+                        //    Gisto[i] = Form2.PixArray[i];
+                        //    if (Gisto[i] <= min)
+                        //    {
+                        //        min = Gisto[i];
+                        //        minIndex = i;
+                        //    }
+                        //}
+                        //for(int i = Gisto.Length - 1; i >= 0; i--)
+                        //{
+                        //    Gisto[i] = Form2.PixArray[i];
+                        //    if (Gisto[i] != 0)
+                        //    {
+                        //        minIndex = i;
+                        //        //min = Gisto[i];
+                        //        break;
+                        //    }
+                        //}
+                        #endregion
+                        for (int i = 0; i < Gisto.Length; i++)
+                        {
+                            Gisto[i] = Form2.PixArray[i];
+                            if (Gisto[i] != 0)
                             {
-                                Gisto[i] = (double)Form2.PixArray[i];
-                                if (Gisto[i] < min)
-                                {
-                                    min = (int)Gisto[i];
-                                    minIndex = i;
-                                }
+                                minIndex = i;
+                                break;
                             }
+                        }
                         LocalBinarOptimyz(bgraValues, bmp.Height, bmp.Width, minIndex);
                         break;
                     }
@@ -246,7 +266,6 @@ namespace Ayka_scoi
             long[,] M = new long[h, w];
             long[,] M2 = new long[h, w];
             
-            //var Maxq = GetIntegralM(ref M, ref q, h, w, a, bgraValues);
             GetIntegralM(ref M, ref M2, h, w, bgraValues);
             var Maxq = min != -1 ? GetMaxq(M, M2, h, w, a) : 0;
             for (int y = 0; y < h; ++y)
@@ -408,14 +427,15 @@ namespace Ayka_scoi
         int Sauvola(double M, double q, double k = 0.2)
         {
             int R = 128;
-            //t[i] = M * (int)Math.Round(1 + k * ((q / R) - 1), 0);
-            //t[i] = (int)Math.Round(M * 1 + k * ((q / R) - 1));
-            return (int)(M + (int)(1 + k * ((q / R) - 1)));
+            //return (int)(M * Math.Round(1 + k * ((q / R) - 1), 0));
+            //return (int)Math.Round(M * 1 + k * ((q / R) - 1), 0);
+            //return (int)(M * (int)(1 + k * ((q / R) - 1)));
+            return (int)(M * (1 + k * ((q / R) - 1)));
         }
         int Wulf(double M, double min, double q, double R)
         {
             double a = 0.5;
-            return (int)(Math.Round((1 - a) * M  + a * min + a * q / R * (M - min), 0));
+            return (int)(Math.Round((1 - a) * M  + a * min + Math.Abs(a * q * (M - min) / R) , 0));
         }
     }
 }
