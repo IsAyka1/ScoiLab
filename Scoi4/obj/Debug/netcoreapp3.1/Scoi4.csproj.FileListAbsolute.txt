@@ -1,0 +1,15 @@
+C:\Users\mtara\source\repos\Scoi4\Scoi4\bin\Debug\netcoreapp3.1\Scoi4.exe
+C:\Users\mtara\source\repos\Scoi4\Scoi4\bin\Debug\netcoreapp3.1\Scoi4.deps.json
+C:\Users\mtara\source\repos\Scoi4\Scoi4\bin\Debug\netcoreapp3.1\Scoi4.runtimeconfig.json
+C:\Users\mtara\source\repos\Scoi4\Scoi4\bin\Debug\netcoreapp3.1\Scoi4.runtimeconfig.dev.json
+C:\Users\mtara\source\repos\Scoi4\Scoi4\bin\Debug\netcoreapp3.1\Scoi4.dll
+C:\Users\mtara\source\repos\Scoi4\Scoi4\bin\Debug\netcoreapp3.1\Scoi4.pdb
+C:\Users\mtara\source\repos\Scoi4\Scoi4\obj\Debug\netcoreapp3.1\Scoi4.csprojAssemblyReference.cache
+C:\Users\mtara\source\repos\Scoi4\Scoi4\obj\Debug\netcoreapp3.1\Scoi4.Form1.resources
+C:\Users\mtara\source\repos\Scoi4\Scoi4\obj\Debug\netcoreapp3.1\Scoi4.csproj.GenerateResource.cache
+C:\Users\mtara\source\repos\Scoi4\Scoi4\obj\Debug\netcoreapp3.1\Scoi4.AssemblyInfoInputs.cache
+C:\Users\mtara\source\repos\Scoi4\Scoi4\obj\Debug\netcoreapp3.1\Scoi4.AssemblyInfo.cs
+C:\Users\mtara\source\repos\Scoi4\Scoi4\obj\Debug\netcoreapp3.1\Scoi4.csproj.CoreCompileInputs.cache
+C:\Users\mtara\source\repos\Scoi4\Scoi4\obj\Debug\netcoreapp3.1\Scoi4.dll
+C:\Users\mtara\source\repos\Scoi4\Scoi4\obj\Debug\netcoreapp3.1\Scoi4.pdb
+C:\Users\mtara\source\repos\Scoi4\Scoi4\obj\Debug\netcoreapp3.1\Scoi4.genruntimeconfig.cache
