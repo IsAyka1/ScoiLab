@@ -98,7 +98,7 @@ namespace Scoi5
             {
                 for (int y = 0; y < H; ++y)
                 {
-                    complexArr[y] = new Complex(Arr[GetIndexArr(x, y, (int)W)].Real, -Arr[GetIndexArr(x, y, (int)W)].Imaginary);
+                    complexArr[y] = new Complex(Arr[GetIndexArr(x, y, (int)W)].Real, Arr[GetIndexArr(x, y, (int)W)].Imaginary);
                 }
                 complexArr = DTF(complexArr);
                 for (int i = 0; i < H; ++i)

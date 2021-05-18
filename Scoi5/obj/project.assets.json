@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\mtara\\source\\repos\\Scoi5\\Scoi5\\Scoi5.csproj",
+      "projectUniqueName": "C:\\Users\\mtara\\Desktop\\ScoiLab\\Scoi5\\Scoi5.csproj",
       "projectName": "Scoi5",
-      "projectPath": "C:\\Users\\mtara\\source\\repos\\Scoi5\\Scoi5\\Scoi5.csproj",
+      "projectPath": "C:\\Users\\mtara\\Desktop\\ScoiLab\\Scoi5\\Scoi5.csproj",
       "packagesPath": "C:\\Users\\mtara\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\mtara\\source\\repos\\Scoi5\\Scoi5\\obj\\",
+      "outputPath": "C:\\Users\\mtara\\Desktop\\ScoiLab\\Scoi5\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\mtara\\AppData\\Roaming\\NuGet\\NuGet.Config",
